@@ -11,10 +11,6 @@
 
 #include <linux/sizes.h>
 
-/* LP0 suspend / resume */
-#define CONFIG_TEGRA_LP0
-#define CONFIG_AES
-
 /* enable PMIC */
 #define CONFIG_AS3722_POWER
 
