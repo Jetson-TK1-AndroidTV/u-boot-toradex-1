@@ -11,10 +11,6 @@
 
 #include <linux/sizes.h>
 
-/* LP0 suspend / resume */
-#define CONFIG_TEGRA_LP0
-#define CONFIG_AES
-
 /* enable PMIC */
 #define CONFIG_AS3722_POWER
 
@@ -24,12 +20,7 @@
 #define CONFIG_TEGRA124_LP0
 #endif
 
-#define CONFIG_OF_LIBFDT
-#define CONFIG_OF_BOARD_SETUP
-
 #define CONFIG_SERIAL_TAG
-#define CONFIG_TEGRA_SERIAL_HIGH	0x01770000
-#define CONFIG_TEGRA_SERIAL_LOW		0x034200FF
 
 /* High-level configuration options */
 #define V_PROMPT			"Apalis TK1 # "
