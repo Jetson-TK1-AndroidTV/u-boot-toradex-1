@@ -94,86 +94,28 @@
 #undef CONFIG_SERVERIP
 #define CONFIG_SERVERIP		192.168.10.1
 
-#define CONFIG_BOOTCOMMAND \
-	"run emmcboot; echo; echo emmcboot failed; " \
-	"run sdboot; echo; echo sdboot failed; " \
-	"run usbboot; echo; echo usbboot failed; " \
-	"run nfsboot; echo; echo nfsboot failed"
-
-#define DFU_ALT_EMMC_INFO	"apalis-tk1.img raw 0x0 0x500 mmcpart 1; " \
-				"boot part 0 1 mmcpart 0; " \
-				"rootfs part 0 2 mmcpart 0; " \
-				"uImage fat 0 1 mmcpart 0; " \
-				"tegra30-apalis-eval.dtb fat 0 1 mmcpart 0"
-
-#define EMMC_BOOTCMD \
-	"emmcargs=ip=off root=/dev/mmcblk0p2 rw rootfstype=ext3 rootwait\0" \
-	"emmcboot=run setup; setenv bootargs ${defargs} ${emmcargs} " \
-		"${setupargs} ${vidargs}; echo Booting from internal eMMC " \
-		"chip...; run emmcdtbload; load mmc 0:1 ${kernel_addr_r} " \
-		"${boot_file} && bootm ${kernel_addr_r} - ${dtbparam}\0" \
-	"emmcdtbload=setenv dtbparam; load mmc 0:1 ${fdt_addr_r} " \
-		"${soc}-apalis-${fdt_board}.dtb && " \
-		"setenv dtbparam ${fdt_addr_r}\0"
-
-#define NFS_BOOTCMD \
-	"nfsargs=ip=:::::eth0:on root=/dev/nfs rw netdevwait\0" \
-	"nfsboot=run setup; setenv bootargs ${defargs} ${nfsargs} " \
-		"${setupargs} ${vidargs}; echo Booting via DHCP/TFTP/NFS...; " \
-		"run nfsdtbload; dhcp ${kernel_addr_r} " \
-		"&& bootm ${kernel_addr_r} - ${dtbparam}\0" \
-	"nfsdtbload=setenv dtbparam; tftp ${fdt_addr_r} " \
-		"${soc}-apalis-${fdt_board}.dtb " \
-		"&& setenv dtbparam ${fdt_addr_r}\0"
-
-#define SD_BOOTCMD \
-	"sdargs=ip=off root=/dev/mmcblk1p2 rw rootfstype=ext3 rootwait\0" \
-	"sdboot=run setup; setenv bootargs ${defargs} ${sdargs} ${setupargs} " \
-		"${vidargs}; echo Booting from SD card in 8bit slot...; " \
-		"run sddtbload; load mmc 1:1 ${kernel_addr_r} " \
-		"${boot_file} && bootm ${kernel_addr_r} - ${dtbparam}\0" \
-	"sddtbload=setenv dtbparam; load mmc 1:1 ${fdt_addr_r} " \
-		"${soc}-apalis-${fdt_board}.dtb " \
-		"&& setenv dtbparam ${fdt_addr_r}\0"
-
-#define USB_BOOTCMD \
-	"usbargs=ip=off root=/dev/sda2 rw rootfstype=ext3 rootwait\0" \
-	"usbboot=run setup; setenv bootargs ${defargs} ${setupargs} " \
-		"${usbargs} ${vidargs}; echo Booting from USB stick...; " \
-		"usb start && run usbdtbload; load usb 0:1 ${kernel_addr_r} " \
-		"${boot_file} && bootm ${kernel_addr_r} - ${dtbparam}\0" \
-	"usbdtbload=setenv dtbparam; load usb 0:1 ${fdt_addr_r} " \
-		"${soc}-apalis-${fdt_board}.dtb " \
-		"&& setenv dtbparam ${fdt_addr_r}\0"
-
+/* Android bootimg support */
+#define CONFIG_CMD_BOOTA
+#define CONFIG_ANDROID_BOOT_IMAGE
+#define CONFIG_CMD_BOOTA_BOOT_PART	      "LNX"
+#define CONFIG_CMD_BOOTA_RECOVERY_PART	  "SOS"
+#define CONFIG_CMD_BOOTA_DT_PART	      "DTB"
+#define CONFIG_ANDROID_DT_HDR_BUFF	      (NV_PA_SDRAM_BASE + 0x03000000)
+#define CONFIG_ANDROID_BOOT_HDR_BUFF	  (NV_PA_SDRAM_BASE + 0x04000000)
 #define BOARD_EXTRA_ENV_SETTINGS \
-	"boot_file=uImage\0" \
-	"console=ttyS0\0" \
-	"defargs=lp0_vec=2064@0xf46ff000 core_edp_mv=1150 core_edp_ma=4000 " \
-		"usb_port_owner_info=2 lane_owner_info=6 emc_max_dvfs=0\0" \
-	"dfu_alt_info=" DFU_ALT_EMMC_INFO "\0" \
-	EMMC_BOOTCMD \
-	"fdt_board=eval\0" \
-	NFS_BOOTCMD \
-	SD_BOOTCMD \
-	"setethupdate=if env exists ethaddr; then; else setenv ethaddr " \
-		"00:14:2d:00:00:00; fi; tftpboot ${loadaddr} " \
-		"flash_eth.img && source ${loadaddr}\0" \
-	"setsdupdate=setenv interface mmc; setenv drive 1; mmc rescan; " \
-		"load ${interface} ${drive}:1 ${loadaddr} flash_blk.img " \
-		"|| setenv drive 2; mmc rescan; load ${interface} ${drive}:1 " \
-		"${loadaddr} flash_blk.img && " \
-		"source ${loadaddr}\0" \
-	"setup=setenv setupargs igb_mac=${ethaddr} " \
-		"consoleblank=0 no_console_suspend=1 console=tty1 " \
-		"console=${console},${baudrate}n8 debug_uartport=lsport,0 " \
-		"${memargs}\0" \
-	"setupdate=run setsdupdate || run setusbupdate || run setethupdate\0" \
-	"setusbupdate=usb start && setenv interface usb; setenv drive 0; " \
-		"load ${interface} ${drive}:1 ${loadaddr} flash_blk.img && " \
-		"source ${loadaddr}\0" \
-	USB_BOOTCMD \
-	"vidargs=video=tegrafb0:640x480-16@60 fbcon=map:1\0"
+	"bootargs_append=" \
+	"init=init console=ttyS0,115200n8 " \
+	"lp0_vec=2064@0xf46ff000 mem=1862M@2048M vpr=151M@3945M tsec=32M@3913M " \
+	"core_edp_mv=1150 core_edp_ma=4000 " \
+	"tegraid=40.1.1.0.0 tegra_fbmem=32899072@0xad012000 fbcon=map:1 " \
+	"video=tegrafb memtype=255 ddr_die=2048M@2048M section=256M " \
+	"debug_uartport=lsport,3 " \
+	"power_supply=Adapter audio_codec=sgtl5000 gpt " \
+	"usbcore.old_scheme_first=1 usb_port_owner_info=2 " \
+	"lane_owner_info=6 emc_max_dvfs=0 " \
+	"pmuboard=0x0177:0x0000:0x02:0x43:0x00 " \
+	"otf_key=c75e5bb91eb3bd947560357b64422f85 " \
+	"board_info=0x0177:0x0000:0x02:0x43:0x00\0"
 
 /* Increase console I/O buffer size */
 #undef CONFIG_SYS_CBSIZE
