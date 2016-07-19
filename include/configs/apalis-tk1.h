@@ -25,7 +25,7 @@
 #endif
 
 /* Enable fdt support for Apalis TK1. Flash the image in u-boot-dtb.bin */
-#define CONFIG_DEFAULT_DEVICE_TREE	tegra124-jetson-tk1
+#define CONFIG_DEFAULT_DEVICE_TREE	tegra124-apalis-tk1
 #define CONFIG_OF_CONTROL
 #define CONFIG_OF_SEPARATE
 #define CONFIG_OF_LIBFDT
